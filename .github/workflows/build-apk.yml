@@ -8,18 +8,24 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/kivy/buildozer:latest
+      options: --user root
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install JDK 17
+        run: |
+          apt-get update
+          apt-get install -y openjdk-17-jdk
+
       - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: buildozer android debug
-          buildozer_version: stable
+        env:
+          JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+        run: buildozer android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: phrase-quiz-apk
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
